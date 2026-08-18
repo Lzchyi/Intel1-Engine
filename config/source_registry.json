@@ -1,0 +1,223 @@
+{
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "id": "openf1",
+      "name": "OpenF1",
+      "tier": "A",
+      "enabled": true,
+      "connector_type": "api",
+      "base_url": "https://api.openf1.org/v1/",
+      "docs_url": "https://openf1.org/docs/",
+      "reliability_weight": 1.0,
+      "source_type": "weather",
+      "role": "session_timing_weather_race_control"
+    },
+    {
+      "id": "jolpica",
+      "name": "Jolpica F1",
+      "tier": "A",
+      "enabled": true,
+      "connector_type": "api",
+      "base_url": "https://api.jolpi.ca/ergast/f1/",
+      "docs_url": "https://github.com/jolpica/jolpica-f1/blob/main/docs/README.md",
+      "reliability_weight": 1.0,
+      "source_type": "official_f1",
+      "role": "calendar_results_standings_historical_metadata"
+    },
+    {
+      "id": "formula1_official_latest",
+      "name": "Formula 1 Official Latest",
+      "tier": "A",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://www.formula1.com/en/latest",
+      "reliability_weight": 1.0,
+      "source_type": "official_f1",
+      "role": "official_f1_news_and_weekend_updates"
+    },
+    {
+      "id": "fia_f1_2026_documents",
+      "name": "FIA Formula One 2026 Decision Documents",
+      "tier": "A",
+      "enabled": true,
+      "connector_type": "html_document_index",
+      "url": "https://www.fia.com/documents/championships/fia-formula-one-world-championship-14/season/season-2026-2072",
+      "reliability_weight": 1.0,
+      "source_type": "official_fia",
+      "role": "stewards_penalties_classifications_official_documents"
+    },
+    {
+      "id": "pirelli_formula1_tag",
+      "name": "Pirelli Formula 1 Tag",
+      "tier": "A",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://press.pirelli.com/en/?h=1&t=formula+1",
+      "reliability_weight": 1.0,
+      "source_type": "official_f1",
+      "role": "formula1_specific_pirelli_updates"
+    },
+    {
+      "id": "motorsport_f1",
+      "name": "Motorsport.com Formula 1",
+      "tier": "B",
+      "enabled": true,
+      "connector_type": "rss",
+      "url": "https://www.motorsport.com/rss/f1/news/",
+      "fallback_page_url": "https://www.motorsport.com/f1/",
+      "reliability_weight": 0.8,
+      "source_type": "trusted_news",
+      "role": "news_and_analysis"
+    },
+    {
+      "id": "autosport_f1",
+      "name": "Autosport Formula 1",
+      "tier": "B",
+      "enabled": true,
+      "connector_type": "rss",
+      "url": "https://www.autosport.com/rss/f1/news/",
+      "fallback_page_url": "https://www.autosport.com/f1/",
+      "reliability_weight": 0.8,
+      "source_type": "trusted_news",
+      "role": "news_analysis_and_technical_reporting"
+    },
+    {
+      "id": "racefans_f1",
+      "name": "RaceFans Formula 1",
+      "tier": "B",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://www.racefans.net/category/formula-1/",
+      "fallback_page_url": "https://www.racefans.net/",
+      "reliability_weight": 0.8,
+      "source_type": "trusted_news",
+      "role": "race_weekend_reporting_and_news"
+    },
+    {
+      "id": "the_race_f1",
+      "name": "The Race Formula 1",
+      "tier": "B",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://www.the-race.com/formula-1/",
+      "fallback_page_url": "https://www.the-race.com/",
+      "reliability_weight": 0.8,
+      "source_type": "trusted_news",
+      "role": "specialist_f1_analysis_strategy_and_technical_context"
+    },
+    {
+      "id": "racingnews365_f1",
+      "name": "RacingNews365 Formula 1",
+      "tier": "B",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://racingnews365.com/formula-1",
+      "reliability_weight": 0.82,
+      "source_type": "trusted_news",
+      "role": "race_weekend_results_weather_and_fia_context"
+    },
+    {
+      "id": "reuters_formula1",
+      "name": "Reuters Formula 1",
+      "tier": "B",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://www.reuters.com/sports/formula1/",
+      "reliability_weight": 0.86,
+      "source_type": "trusted_news",
+      "role": "wire_reporting_driver_team_and_race_weekend_context"
+    },
+    {
+      "id": "guardian_formula_one",
+      "name": "The Guardian Formula One",
+      "tier": "C",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://www.theguardian.com/sport/formulaone",
+      "reliability_weight": 0.72,
+      "source_type": "trusted_news",
+      "role": "live_coverage_and_broad_race_weekend_reporting"
+    },
+    {
+      "id": "amus_formula1",
+      "name": "Auto Motor und Sport Formula 1",
+      "tier": "B",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://www.auto-motor-und-sport.de/formel-1/aktuell/",
+      "reliability_weight": 0.8,
+      "language": "de",
+      "source_type": "trusted_news",
+      "role": "technical_reports_paddock_rumours_and_upgrades"
+    },
+    {
+      "id": "racer_f1",
+      "name": "RACER Formula 1",
+      "tier": "B",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://racer.com/category/f1/",
+      "fallback_page_url": "https://racer.com/",
+      "reliability_weight": 0.78,
+      "source_type": "trusted_news",
+      "role": "specialist_motorsport_reporting_and_driver_team_context"
+    },
+    {
+      "id": "bbc_sport_f1",
+      "name": "BBC Sport Formula 1",
+      "tier": "C",
+      "enabled": true,
+      "connector_type": "rss",
+      "url": "https://feeds.bbci.co.uk/sport/formula1/rss.xml",
+      "fallback_page_url": "https://www.bbc.com/sport/formula1",
+      "reliability_weight": 0.7,
+      "source_type": "trusted_news",
+      "role": "broad_free_f1_reporting_and_context"
+    },
+    {
+      "id": "sky_sports_f1",
+      "name": "Sky Sports Formula 1",
+      "tier": "C",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://www.skysports.com/f1",
+      "reliability_weight": 0.72,
+      "source_type": "trusted_news",
+      "role": "broadcast_reporting_team_quotes_and_race_weekend_context"
+    },
+    {
+      "id": "espn_f1",
+      "name": "ESPN Formula 1",
+      "tier": "C",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://www.espn.com/f1/",
+      "reliability_weight": 0.7,
+      "source_type": "trusted_news",
+      "role": "broad_international_formula_1_reporting"
+    },
+    {
+      "id": "crash_f1",
+      "name": "Crash.net Formula 1",
+      "tier": "C",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://www.crash.net/f1",
+      "reliability_weight": 0.66,
+      "source_type": "trusted_news",
+      "role": "broad_race_weekend_reporting_and_quotes"
+    },
+    {
+      "id": "planetf1",
+      "name": "PlanetF1",
+      "tier": "C",
+      "enabled": true,
+      "connector_type": "html_index_page",
+      "url": "https://www.planetf1.com/",
+      "reliability_weight": 0.65,
+      "source_type": "trusted_news",
+      "role": "optional_broader_news_coverage"
+    }
+  ]
+}

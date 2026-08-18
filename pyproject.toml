@@ -1,0 +1,9 @@
+[project]
+name = "intel1"
+version = "0.1.0"
+description = "Intel1 F1 race-weekend intelligence and forecast pipeline"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
