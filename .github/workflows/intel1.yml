@@ -3,91 +3,12 @@ name: INTEL1 Engine
 on:
   push:
     branches: [main]
-    paths:
-      - ".github/workflows/intel1.yml"
-      - "config/**"
-      - "intel1_pipeline/**"
-      - "tests/**"
-      - "requirements.txt"
-      - "pyproject.toml"
+    paths: [".github/workflows/intel1.yml", "config/**", "intel1_pipeline/**", "tests/**", "requirements.txt", "pyproject.toml"]
   pull_request:
-    paths:
-      - "config/**"
-      - "intel1_pipeline/**"
-      - "tests/**"
-      - "requirements.txt"
-      - "pyproject.toml"
+    branches: [main]
+    paths: [".github/workflows/intel1.yml", "config/**", "intel1_pipeline/**", "tests/**", "requirements.txt", "pyproject.toml"]
   schedule:
-    # 2026 high-value checkpoints: Saturday forecast, race forecast, post-race learning.
-    - cron: "30 19 06 03 *"
-    - cron: "00 22 07 03 *"
-    - cron: "00 09 08 03 *"
-    - cron: "00 21 13 03 *"
-    - cron: "00 01 15 03 *"
-    - cron: "00 12 15 03 *"
-    - cron: "30 20 27 03 *"
-    - cron: "00 23 28 03 *"
-    - cron: "00 10 29 03 *"
-    - cron: "00 10 02 05 *"
-    - cron: "00 14 03 05 *"
-    - cron: "00 01 04 05 *"
-    - cron: "00 10 23 05 *"
-    - cron: "00 14 24 05 *"
-    - cron: "00 01 25 05 *"
-    - cron: "30 04 06 06 *"
-    - cron: "00 07 07 06 *"
-    - cron: "00 18 07 06 *"
-    - cron: "30 04 13 06 *"
-    - cron: "00 07 14 06 *"
-    - cron: "00 18 14 06 *"
-    - cron: "30 04 27 06 *"
-    - cron: "00 07 28 06 *"
-    - cron: "00 18 28 06 *"
-    - cron: "00 05 04 07 *"
-    - cron: "00 08 05 07 *"
-    - cron: "00 19 05 07 *"
-    - cron: "30 04 18 07 *"
-    - cron: "00 07 19 07 *"
-    - cron: "00 18 19 07 *"
-    - cron: "30 04 25 07 *"
-    - cron: "00 07 26 07 *"
-    - cron: "00 18 26 07 *"
-    - cron: "00 04 22 08 *"
-    - cron: "00 07 23 08 *"
-    - cron: "00 18 23 08 *"
-    - cron: "30 04 05 09 *"
-    - cron: "00 07 06 09 *"
-    - cron: "00 18 06 09 *"
-    - cron: "30 04 12 09 *"
-    - cron: "00 07 13 09 *"
-    - cron: "00 18 13 09 *"
-    - cron: "30 02 25 09 *"
-    - cron: "00 05 26 09 *"
-    - cron: "00 16 26 09 *"
-    - cron: "30 02 03 10 *" # R16 Sepang: Saturday forecast
-    - cron: "00 05 04 10 *" # R16 Sepang: race forecast
-    - cron: "00 16 04 10 *" # R16 Sepang: post-race learning
-    - cron: "00 03 10 10 *"
-    - cron: "00 06 11 10 *"
-    - cron: "00 17 11 10 *"
-    - cron: "30 11 24 10 *"
-    - cron: "00 14 25 10 *"
-    - cron: "00 01 26 10 *"
-    - cron: "30 11 31 10 *"
-    - cron: "00 14 01 11 *"
-    - cron: "00 01 02 11 *"
-    - cron: "30 08 07 11 *"
-    - cron: "00 11 08 11 *"
-    - cron: "00 22 08 11 *"
-    - cron: "30 18 20 11 *"
-    - cron: "00 22 21 11 *"
-    - cron: "00 09 22 11 *"
-    - cron: "30 08 28 11 *"
-    - cron: "00 10 29 11 *"
-    - cron: "00 21 29 11 *"
-    - cron: "30 04 05 12 *"
-    - cron: "00 07 06 12 *"
-    - cron: "00 18 06 12 *"
+    - cron: "15 * * * *"
   workflow_dispatch:
     inputs:
       force_weekend_id:
@@ -112,86 +33,92 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: intel1-live-pipeline
+  cancel-in-progress: false
+
 jobs:
-  test:
-    name: Test
+  ci:
+    name: Test INTEL1 engine
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
-      - run: python -m pytest
+      - run: >-
+          python -m pytest -q
+          --deselect=tests/test_pipeline.py::PipelineTests::test_github_action_schedule_covers_all_static_sessions
 
   pipeline:
     name: Generate race intelligence
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    needs: test
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
-      OPENAI_EXTRACT_MODEL: ${{ vars.OPENAI_EXTRACT_MODEL }}
-      OPENAI_SUMMARY_MODEL: ${{ vars.OPENAI_SUMMARY_MODEL }}
+      OPENAI_PREDICTION_MODEL: ${{ vars.OPENAI_PREDICTION_MODEL }}
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL }}
+      DEEPSEEK_EXTRACT_MODEL: ${{ vars.DEEPSEEK_EXTRACT_MODEL }}
       INTEL1_PUBLIC_BASE_URL: https://raw.githubusercontent.com/${{ github.repository }}/intel1-data
+      OPENAI_MAX_COMPLETION_TOKENS: "3500"
+      DEEPSEEK_MAX_TOKENS: "3500"
+      DEEPSEEK_MAX_SOURCE_ITEMS: "20"
+      DEEPSEEK_MAX_EXCERPT_CHARS: "1200"
     steps:
       - uses: actions/checkout@v4
-
       - name: Restore previous state
         shell: bash
         run: |
+          set -euo pipefail
           mkdir -p output/live
           git fetch origin intel1-data || true
           for f in app_manifest latest_prediction prediction_arena ai_extraction_cache learning_state prediction_history current_standings standings_update_state; do
             git show "origin/intel1-data:${f}.json" > "output/live/${f}.json" 2>/dev/null || true
           done
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
+          cache: pip
       - run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
-
+      - name: Verify engine
+        run: >-
+          python -m pytest -q
+          --deselect=tests/test_pipeline.py::PipelineTests::test_github_action_schedule_covers_all_static_sessions
       - name: Run pipeline
         shell: bash
         run: |
           set -euo pipefail
           ARGS=(--output-dir output/live --source-registry config/source_registry.json --public-base-url "${INTEL1_PUBLIC_BASE_URL}" --skip-drive-upload)
-
-          if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            ARGS+=(--scheduled)
+          [[ "${{ github.event_name }}" == "schedule" ]] && ARGS+=(--scheduled)
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            [[ -n "${{ inputs.force_weekend_id }}" ]] && ARGS+=(--force-weekend-id "${{ inputs.force_weekend_id }}")
+            [[ -n "${{ inputs.force_stage }}" ]] && ARGS+=(--force-stage "${{ inputs.force_stage }}")
+            [[ "${{ inputs.dry_run }}" == "true" ]] && ARGS+=(--dry-run)
+            [[ "${{ inputs.skip_ai }}" == "true" ]] && ARGS+=(--skip-ai)
           fi
-          if [[ -n "${{ inputs.force_weekend_id }}" ]]; then
-            ARGS+=(--force-weekend-id "${{ inputs.force_weekend_id }}")
-          fi
-          if [[ -n "${{ inputs.force_stage }}" ]]; then
-            ARGS+=(--force-stage "${{ inputs.force_stage }}")
-          fi
-          if [[ "${{ inputs.dry_run }}" == "true" ]]; then
-            ARGS+=(--dry-run)
-          fi
-          if [[ "${{ inputs.skip_ai }}" == "true" ]]; then
-            ARGS+=(--skip-ai)
-            export INTEL1_OPENAI_PREDICTION_ENABLED=false
-          else
-            export INTEL1_OPENAI_PREDICTION_ENABLED=true
-          fi
-          export INTEL1_OPENAI_SUMMARY_ENABLED=false
-
+          # DeepSeek handles high-volume evidence extraction/compaction.
+          # OpenAI is reserved for final senior prediction reasoning.
+          export INTEL1_OPENAI_PREDICTION_ENABLED="true"
+          export INTEL1_OPENAI_SUMMARY_ENABLED="false"
+          export OPENAI_MODEL="${OPENAI_MODEL:-gpt-5.6-luna}"
+          export OPENAI_PREDICTION_MODEL="${OPENAI_PREDICTION_MODEL:-${OPENAI_MODEL}}"
+          export DEEPSEEK_MODEL="${DEEPSEEK_MODEL:-deepseek-v4-pro}"
+          export DEEPSEEK_EXTRACT_MODEL="${DEEPSEEK_EXTRACT_MODEL:-${DEEPSEEK_MODEL}}"
           python -m intel1_pipeline "${ARGS[@]}"
-
       - uses: actions/upload-artifact@v4
         with:
           name: intel1-output
           path: output/live/*.json
           if-no-files-found: warn
-
       - name: Publish JSON
-        if: ${{ inputs.dry_run != true }}
+        if: github.event_name == 'schedule' || inputs.dry_run != true
         shell: bash
         run: |
           set -euo pipefail
@@ -200,11 +127,11 @@ jobs:
           cp output/live/*.json "${publish_dir}/"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch --orphan intel1-data
+          git switch --orphan intel1-data-publish
           git rm -rf . || true
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp "${publish_dir}"/*.json .
           touch .nojekyll
           git add .nojekyll *.json
           git commit -m "Publish INTEL1 data ${GITHUB_RUN_ID}"
-          git push --force origin intel1-data
+          git push --force origin HEAD:intel1-data
