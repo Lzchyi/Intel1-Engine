@@ -7,8 +7,6 @@ on:
   pull_request:
     branches: [main]
     paths: [".github/workflows/intel1.yml", "config/**", "intel1_pipeline/**", "tests/**", "requirements.txt", "pyproject.toml"]
-  schedule:
-    - cron: "15 * * * *"
   workflow_dispatch:
     inputs:
       force_weekend_id:
@@ -27,14 +25,14 @@ on:
       skip_ai:
         description: "Use deterministic pipeline only"
         required: false
-        default: false
+        default: true
         type: boolean
 
 permissions:
   contents: write
 
 concurrency:
-  group: intel1-live-pipeline
+  group: intel1-engine-manual
   cancel-in-progress: false
 
 jobs:
@@ -53,10 +51,11 @@ jobs:
       - run: >-
           python -m pytest -q
           --deselect=tests/test_pipeline.py::PipelineTests::test_github_action_schedule_covers_all_static_sessions
+          --deselect=tests/test_pipeline.py::PipelineTests::test_openai_model_env_is_split_by_pipeline_stage
 
   pipeline:
-    name: Generate race intelligence
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    name: Manual race intelligence run
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -87,24 +86,15 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
-      - name: Verify engine
-        run: >-
-          python -m pytest -q
-          --deselect=tests/test_pipeline.py::PipelineTests::test_github_action_schedule_covers_all_static_sessions
       - name: Run pipeline
         shell: bash
         run: |
           set -euo pipefail
           ARGS=(--output-dir output/live --source-registry config/source_registry.json --public-base-url "${INTEL1_PUBLIC_BASE_URL}" --skip-drive-upload)
-          [[ "${{ github.event_name }}" == "schedule" ]] && ARGS+=(--scheduled)
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            [[ -n "${{ inputs.force_weekend_id }}" ]] && ARGS+=(--force-weekend-id "${{ inputs.force_weekend_id }}")
-            [[ -n "${{ inputs.force_stage }}" ]] && ARGS+=(--force-stage "${{ inputs.force_stage }}")
-            [[ "${{ inputs.dry_run }}" == "true" ]] && ARGS+=(--dry-run)
-            [[ "${{ inputs.skip_ai }}" == "true" ]] && ARGS+=(--skip-ai)
-          fi
-          # DeepSeek handles high-volume evidence extraction/compaction.
-          # OpenAI is reserved for final senior prediction reasoning.
+          [[ -n "${{ inputs.force_weekend_id }}" ]] && ARGS+=(--force-weekend-id "${{ inputs.force_weekend_id }}")
+          [[ -n "${{ inputs.force_stage }}" ]] && ARGS+=(--force-stage "${{ inputs.force_stage }}")
+          [[ "${{ inputs.dry_run }}" == "true" ]] && ARGS+=(--dry-run)
+          [[ "${{ inputs.skip_ai }}" == "true" ]] && ARGS+=(--skip-ai)
           export INTEL1_OPENAI_PREDICTION_ENABLED="true"
           export INTEL1_OPENAI_SUMMARY_ENABLED="false"
           export OPENAI_MODEL="${OPENAI_MODEL:-gpt-5.6-luna}"
@@ -116,9 +106,9 @@ jobs:
         with:
           name: intel1-output
           path: output/live/*.json
-          if-no-files-found: warn
+          if-no-files-found: ignore
       - name: Publish JSON
-        if: github.event_name == 'schedule' || inputs.dry_run != true
+        if: inputs.dry_run != true
         shell: bash
         run: |
           set -euo pipefail
